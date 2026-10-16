@@ -4,7 +4,7 @@ The official source plugins for [Aikatsu](https://github.com/KidiXDev/aikatsu). 
 
 ## How a repo works
 
-A repo is a folder served over HTTPS (here: GitHub raw files):
+A repo is a GitHub repository laid out like this one; Aikatsu reads `index.json` from its default branch:
 
 ```
 index.json          the list Aikatsu reads
@@ -30,11 +30,11 @@ tests/<key>.rhai    fixture tests for that script (not downloaded by the app)
 ```
 
 - `id` and `key`: lowercase letters, digits, `-` or `_`. Aikatsu stores a source as `<id>/<key>` in watch history and downloads, so **never rename them**.
-- `version`: shown in Settings. Bump it when you change a script.
+- `version`: bump it when you change a script.
 - `api`: the host API version the script needs (see below). Older apps skip plugins that need more.
 - `sha256`: the script's checksum. Aikatsu refuses a download that doesn't match, so a half-updated repo never breaks a working plugin. Don't edit it by hand: run `aikatsu-plugin index .`.
 
-Anyone can host a repo like this one. Users add it from Settings → Sources → Add repo, after a warning to only add repos they trust.
+Anyone can host a repo like this one. Users add it by pasting its GitHub link on Aikatsu's Plugins page (Settings → Sources → Manage), after a warning to only add repos they trust.
 
 ## Writing a plugin
 
@@ -106,13 +106,13 @@ aikatsu-plugin index .                         # refresh the checksums in index.
 
 Tests are Rhai functions named `test_*`. They call the plugin's own functions on saved HTML, using `assert(ok)`, `assert(ok, message)` and `assert_eq(got, want)`.
 
-To try a repo in the app before publishing it, add it in Settings with a `file://` link to its `index.json` (desktop).
+To try a repo in the app before publishing it, add it on the Plugins page with a `file://` link to its `index.json` (desktop).
 
 ## Publishing a fix
 
 1. Change the script, then `aikatsu-plugin test .` and `aikatsu-plugin live sources/<key>.rhai`.
 2. Bump its `version` and run `aikatsu-plugin index .`.
-3. Commit and push. Apps pick it up on their next start, or from Settings → Check for updates. GitHub can take a few minutes to serve the new files.
+3. Commit and push. Apps pick it up on their next start, or from the refresh button on the Plugins page. GitHub can take a few minutes to serve the new files.
 
 ## License
 
