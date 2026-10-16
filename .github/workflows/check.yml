@@ -10,6 +10,8 @@ on:
 jobs:
   plugins:
     runs-on: ubuntu-24.04
+    env:
+      RUSTFLAGS: --cfg reqwest_unstable
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
