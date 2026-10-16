@@ -1,87 +1,122 @@
-// nimegami.id — one page holds a whole season; each `li.select-eps[data]`
-// carries base64 JSON [{format, url:[embeds]}]. Episode URLs are
-// <page>#play_eps_<n>. The app keeps fetched pages for 10 minutes, so the
-// ~230 KB season page is read once for the list, the qualities and the stream.
+// nimegami.id — search JSON, #episode_N links, and server data in streamed page props.
 
 const BASE = "https://nimegami.id";
 const LABEL = "Nimegami";
-const FRAGMENT = "#play_eps_";
-const EPISODE_ID = #"^play_eps_(\d+)$"#;
+const EPISODE_ID = #"^(?:play_eps_|episode_)((?:(?:special|ova|ona|movie)_)?\d+)$"#;
 
 fn referer() { global::BASE + "/" }
 
-fn clean_title(s) {
-    let t = regex_replace(s, #"(?i)\s*(?:sub\s+indo|subtitle\s+indonesia)?\s*(?::\s*episode.*)?$"#, "");
-    t.trim();
-    t
+fn is_web(u) {
+    let p = url_parse(u);
+    p != () && (p.scheme == "http" || p.scheme == "https") && p.host != ""
 }
 
-fn search(q) { parse_search(page(`${global::BASE}/?s=${url_encode(q)}`, referer())) }
+fn search(q) { parse_search(fetch(`${global::BASE}/api/anime-search/?q=${url_encode(q)}`, #{ referer: referer() }).body) }
 
 fn parse_search(body) {
+    let items = json_parse(body)?.suggestions;
+    if type_of(items) != "array" { throw `${global::LABEL}: invalid search response`; }
     let out = [];
-    for art in select(body, "article") {
-        let a = select(art.html, "h2 a");
-        if a.is_empty() { continue; }
-        let href = attr(a[0], "href");
-        let title = clean_title(a[0].text);
-        if href == "" || title == "" { continue; }
-        let img = select(art.html, "img");
-        out.push(#{ name: title, url: href, image: if img.is_empty() { "" } else { attr(img[0], "src") } });
+    for item in items {
+        if type_of(item?.slug) != "string" || type_of(item?.title) != "string" || item.title == "" { continue; }
+        if regex_match(item.slug, #"^[a-z0-9][a-z0-9-]*$"#) == () { continue; }
+        let image = if type_of(item?.poster) == "string" { url_join(referer(), item.poster) } else { "" };
+        out.push(#{ name: item.title, url: `${global::BASE}/${item.slug}/`, image: if is_web(image) { image } else { "" } });
     }
     out
 }
 
-// Episode number (as text) → #{entries, title}.
-fn payloads(body) {
-    let out = #{};
-    for li in select(body, "li.select-eps[data]") {
-        let m = regex_match(attr(li, "id"), global::EPISODE_ID);
+// Decode and join streamed chunks before parsing: a JSON record can span scripts.
+fn player_data(body) {
+    let flight = "";
+    for script in select(body, "script") {
+        let m = regex_match(html_decode(script.html), #"(?s)^\s*self\.__next_f\.push\((\[.*\])\)\s*;?\s*$"#);
         if m == () { continue; }
-        try {
-            let entries = json_parse(base64_decode(attr(li, "data")));
-            if type_of(entries) == "array" && !entries.is_empty() && entries.all(|e| type_of(e?.format) == "string" && type_of(e?.url) == "array") {
-                out[`${parse_int(m[1])}`] = #{ entries: entries, title: clean_title(attr(li, "title")) };
-            }
-        } catch (err) {}
+        let chunk = json_parse(m[1]);
+        if chunk.len() == 2 && chunk[0] == 1 && type_of(chunk[1]) == "string" { flight += chunk[1]; }
     }
-    out
+    for row in flight.split("\n") {
+        if !row.contains(#""links":["#) { continue; }
+        let pending = [json_parse(row.sub_string(row.index_of(":") + 1))];
+        while !pending.is_empty() {
+            let value = pending.pop();
+            if type_of(value) == "array" { pending += value; }
+            else if type_of(value) == "map" {
+                if type_of(value?.links) == "array" { return value; }
+                pending += value.values();
+            }
+        }
+    }
+    throw `${global::LABEL}: no player data on the page`;
 }
 
-// <page>#play_eps_<n> → [page, n]; n is 0 without that fragment.
+// Accept old saved #play_eps_N URLs as well as the current #episode_N anchors.
 fn split_episode_url(u) {
     u.trim();
     let i = u.index_of("#");
-    if i < 0 { return [u, 0]; }
+    if i < 0 { return [u, ""]; }
     let m = regex_match(u.sub_string(i + 1), global::EPISODE_ID);
-    [u.sub_string(0, i), if m == () { 0 } else { parse_int(m[1]) }]
+    [u.sub_string(0, i), if m == () { "" } else { m[1] }]
 }
 
 fn episodes(url) {
     let page_url = split_episode_url(url)[0];
-    let p = payloads(page(page_url, referer()));
-    p.keys().map(|n| #{ num: parse_int(n), url: `${page_url}${global::FRAGMENT}${n}`, title: p[n].title })
+    parse_episodes(page(page_url, referer()), page_url)
+}
+
+fn parse_episodes(body, page_url) {
+    let out = [];
+    let seen = #{};
+    for a in select(body, ".episode-grid a[href]") {
+        let id = split_episode_url(attr(a, "href"))[1];
+        if id == "" || seen.contains(id) { continue; }
+        seen[id] = true;
+        let n = regex_match(id, #"(\d+)$"#);
+        out.push(#{ num: parse_int(n[1]), url: `${page_url}#episode_${id}`, title: attr(a, "title") });
+    }
+    out
+}
+
+fn parse_entries(body, episode) {
+    let out = [];
+    for e in player_data(body).links {
+        if e?.kind == "batch" || type_of(e?.episode) != "i64" || type_of(e?.quality) != "string" { continue; }
+        let kind = e?.episodeType ?? "episode";
+        let id = if kind == "episode" { `${e.episode}` } else { `${kind}_${e.episode}` };
+        if id != episode { continue; }
+        let u = e?.playUrl;
+        if type_of(u) != "string" || !is_web(u) { continue; }
+        let p = url_parse(u);
+        if ["vsys-srv.berkasdrive.com", "vsys-meledak.dlgan.my.id"].contains(p.host) {
+            u.replace("/hal/download/", "/hal/streaming/");
+        } else if e?.mode != "embed" && e?.mode != "video" { continue; }
+        out.push(#{ height: height_of(e.quality), url: u, direct: e?.mode == "video" });
+    }
+    out
 }
 
 fn episode_entries(url) {
     let parts = split_episode_url(url);
-    if parts[1] <= 0 { throw `${global::LABEL}: not a nimegami episode URL: ${url}`; }
-    let e = payloads(page(parts[0], referer()))[`${parts[1]}`];
-    if e == () { throw `${global::LABEL}: episode ${parts[1]} is not on the page`; }
-    e.entries
+    if parts[1] == "" { throw `${global::LABEL}: not a nimegami episode URL: ${url}`; }
+    let entries = parse_entries(page(parts[0], referer()), parts[1]);
+    if entries.is_empty() { throw `${global::LABEL}: no streaming servers for episode ${parts[1]}`; }
+    entries
 }
 
-fn heights(url) { episode_entries(url).map(|e| height_of(e.format)) }
+fn heights(url) {
+    let out = episode_entries(url).map(|e| e.height).filter(|h| h > 0);
+    out.sort();
+    out.dedup();
+    out
+}
 
 fn stream(url, quality) {
-    let entries = sort_by_height(episode_entries(url).map(|e| #{ height: height_of(e.format), embeds: e.url }), quality);
     let last_err = "";
-    for e in entries {
-        for embed in e.embeds {
-            try {
-                return #{ url: resolve_embed(embed), referer: referer() };
-            } catch (err) { last_err = err; }
-        }
+    for e in sort_by_height(episode_entries(url), quality) {
+        try {
+            let file = if e.direct { e.url } else { resolve_embed(e.url) };
+            if is_web(file) && playable(file, referer()) { return #{ url: file, referer: referer() }; }
+        } catch (err) { last_err = err; }
     }
     throw with_cause(`${global::LABEL}: no playable server for this episode`, last_err);
 }
@@ -94,13 +129,16 @@ fn resolve_embed(embed) {
     if m != () {
         let api = json_parse(fetch(url_join(embed, m[1]), #{ referer: referer() }).body);
         if api?.ok != true || type_of(api?.url) != "string" || api.url == "" { throw `${global::LABEL} stream API: no media URL in response`; }
-        if !playable(api.url) { throw `${global::LABEL}: file not served from here`; }
         return api.url;
     }
-    // Legacy layout: <source src="…mp4?filename=…">; the filename query has unescaped spaces.
-    let s = regex_match(body, #"<source[^>]+src=["']([^"']+)["']"#);
-    if s == () { throw `${global::LABEL}: no <source> in streaming page`; }
-    let file = s[1].split("?")[0];
-    if !playable(file) { throw `${global::LABEL}: file not served from here`; }
-    file
+    media_url(body)
+}
+
+fn media_url(body) {
+    let sources = select(body, "#player[data-src], video[src], source[src]");
+    for s in sources {
+        let u = if attr(s, "data-src") != "" { attr(s, "data-src") } else { attr(s, "src") };
+        if is_web(u) { return u; }
+    }
+    throw `${global::LABEL}: no media URL in streaming page`;
 }
