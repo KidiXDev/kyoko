@@ -17,7 +17,14 @@ tests/<key>.rhai    fixture tests for that script (not downloaded by the app)
   "id": "kyoko",
   "name": "Kyoko",
   "plugins": [
-    { "key": "example", "name": "Example", "version": 1, "api": 1, "file": "sources/example.rhai", "sha256": "…" }
+    {
+      "key": "example",
+      "name": "Example",
+      "version": 1,
+      "api": 1,
+      "file": "sources/example.rhai",
+      "sha256": "…"
+    }
   ]
 }
 ```
@@ -33,12 +40,12 @@ Anyone can host a repo like this one. Users add it from Settings → Sources →
 
 Scripts are [Rhai](https://rhai.rs/book/), which reads like a mix of Rust and JavaScript. A plugin defines four functions:
 
-| Function                | Returns                                                                   |
-| ----------------------- | ------------------------------------------------------------------------- |
-| `search(query)`         | `[#{ name, url, image }]` (`image` may be `""`)                           |
-| `episodes(url)`         | `[#{ num, url, title }]` for the series page `url`; any order             |
-| `heights(url)`          | `[1080, 720, …]`: the resolutions an episode offers                       |
-| `stream(url, quality)`  | `#{ url, referer }`: a playable http(s) URL. `quality` is `"best"` or e.g. `"720p"` |
+| Function               | Returns                                                                             |
+| ---------------------- | ----------------------------------------------------------------------------------- |
+| `search(query)`        | `[#{ name, url, image }]` (`image` may be `""`)                                     |
+| `episodes(url)`        | `[#{ num, url, title }]` for the series page `url`; any order                       |
+| `heights(url)`         | `[1080, 720, …]`: the resolutions an episode offers                                 |
+| `stream(url, quality)` | `#{ url, referer }`: a playable http(s) URL. `quality` is `"best"` or e.g. `"720p"` |
 
 Throw a string to fail (`throw "Example: no mirror for this episode";`). Start messages with the site's name: the app shows them to users. `print(…)` and `debug(…)` go to the app's log.
 
@@ -50,36 +57,36 @@ Everything a script can reach. There is no file, history or settings access.
 
 **Network**
 
-| Function | |
-| --- | --- |
-| `page(url)`, `page(url, referer)` | GET an HTML page through a Chrome-like connection. Cached for 10 minutes, and Cloudflare-style challenge pages are rejected. |
-| `fetch(url)`, `fetch(url, opts)` | Any request → `#{ status, headers, body, url }`. Statuses from 400 throw. `opts`: `method`, `referer`, `headers: #{}`, `form: #{}`, `json`, `client` (`"chrome"`, or `"plain"` for file hosts), `redirect: false` (get the 3xx and its `headers.location`). Header names are lowercase. |
-| `fetch_all(urls)`, `fetch_all(urls, opts)` | The same request to several URLs, 4 at a time; responses in order. |
-| `playable(url)`, `playable(url, referer)` | `true` when the host serves the file (asks for one byte). |
+| Function                                   |                                                                                                                                                                                                                                                                                         |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `page(url)`, `page(url, referer)`          | GET an HTML page through a Chrome-like connection. Cached for 10 minutes, and Cloudflare-style challenge pages are rejected.                                                                                                                                                            |
+| `fetch(url)`, `fetch(url, opts)`           | Any request → `#{ status, headers, body, url }`. Statuses from 400 throw. `opts`: `method`, `referer`, `headers: #{}`, `form: #{}`, `json`, `client` (`"chrome"`, or `"plain"` for file hosts), `redirect: false` (get the 3xx and its `headers.location`). Header names are lowercase. |
+| `fetch_all(urls)`, `fetch_all(urls, opts)` | The same request to several URLs, 4 at a time; responses in order.                                                                                                                                                                                                                      |
+| `playable(url)`, `playable(url, referer)`  | `true` when the host serves the file (asks for one byte).                                                                                                                                                                                                                               |
 
 **Parsing**
 
-| Function | |
-| --- | --- |
-| `select(html, css)` | Each match as `#{ text, html, attrs }` (`html` is the inner HTML, `text` and attribute values are trimmed). Select again inside a match with `select(m.html, …)`. Table rows or cells (`tr`, `td`) selected alone lose their tags, so select the table instead. |
-| `attr(match, name)` | An attribute, `""` when missing. |
-| `regex_match(text, pattern)` | `[whole, group1, …]` for the first match, or `()`. |
-| `regex_replace(text, pattern, with)` | Replaces every match; `$1` refers to groups. |
-| `json_parse(text)` | Maps, arrays, numbers, strings; `null` becomes `()`. |
-| `base64_decode(text)`, `html_decode(text)` | |
-| `url_encode(text)` | For query strings. |
-| `url_join(base, relative)` | `""` when either is invalid. |
-| `url_parse(url)` | `#{ scheme, host, origin, path, query: #{} }`, or `()`. |
-| `url_set_param(url, key, value)` | |
+| Function                                   |                                                                                                                                                                                                                                                                 |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `select(html, css)`                        | Each match as `#{ text, html, attrs }` (`html` is the inner HTML, `text` and attribute values are trimmed). Select again inside a match with `select(m.html, …)`. Table rows or cells (`tr`, `td`) selected alone lose their tags, so select the table instead. |
+| `attr(match, name)`                        | An attribute, `""` when missing.                                                                                                                                                                                                                                |
+| `regex_match(text, pattern)`               | `[whole, group1, …]` for the first match, or `()`.                                                                                                                                                                                                              |
+| `regex_replace(text, pattern, with)`       | Replaces every match; `$1` refers to groups.                                                                                                                                                                                                                    |
+| `json_parse(text)`                         | Maps, arrays, numbers, strings; `null` becomes `()`.                                                                                                                                                                                                            |
+| `base64_decode(text)`, `html_decode(text)` |                                                                                                                                                                                                                                                                 |
+| `url_encode(text)`                         | For query strings.                                                                                                                                                                                                                                              |
+| `url_join(base, relative)`                 | `""` when either is invalid.                                                                                                                                                                                                                                    |
+| `url_parse(url)`                           | `#{ scheme, host, origin, path, query: #{} }`, or `()`.                                                                                                                                                                                                         |
+| `url_set_param(url, key, value)`           |                                                                                                                                                                                                                                                                 |
 
 **Helpers**
 
-| Function | |
-| --- | --- |
-| `height_of(label)` | `"MKV 1080p"` → `1080`; `"best"` → `0`. |
-| `sort_by_height(list, quality)` | Strings by their height, or maps by their `height` field: the requested one first, then the nearest higher, then lower. |
-| `clean_sub_indo(title)` | Drops a trailing "Subtitle Indonesia" / "Sub Indo". |
-| `cache_get(key)`, `cache_set(key, value, seconds)` | A small in-memory cache per plugin (at most an hour), for data that both `heights` and `stream` need. |
+| Function                                           |                                                                                                                         |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `height_of(label)`                                 | `"MKV 1080p"` → `1080`; `"best"` → `0`.                                                                                 |
+| `sort_by_height(list, quality)`                    | Strings by their height, or maps by their `height` field: the requested one first, then the nearest higher, then lower. |
+| `clean_sub_indo(title)`                            | Drops a trailing "Subtitle Indonesia" / "Sub Indo".                                                                     |
+| `cache_get(key)`, `cache_set(key, value, seconds)` | A small in-memory cache per plugin (at most an hour), for data that both `heights` and `stream` need.                   |
 
 A search may take 12 seconds, and anything else 60, before the app stops the script.
 
@@ -109,4 +116,4 @@ To try a repo in the app before publishing it, add it in Settings with a `file:/
 
 ## License
 
-[GPL-3.0](LICENSE), like Aikatsu.
+[GPL-3.0](LICENSE)
