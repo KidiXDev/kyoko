@@ -2,15 +2,6 @@
 
 The official source plugins for [Aikatsu](https://github.com/KidiXDev/aikatsu). Aikatsu adds this repo on first launch and checks it for updates every time it starts, so a site that changed its layout is fixed here, without a new app release.
 
-| Plugin     | Site                |
-| ---------- | ------------------- |
-| Otakudesu  | otakudesu.blog      |
-| Samehadaku | v2.samehadaku.how   |
-| Nimegami   | nimegami.id         |
-| YLnime     | ylnime.com          |
-| Moenime    | moenime.com         |
-| Astronime  | astronime.id        |
-
 ## How a repo works
 
 A repo is a folder served over HTTPS (here: GitHub raw files):
@@ -26,7 +17,7 @@ tests/<key>.rhai    fixture tests for that script (not downloaded by the app)
   "id": "kyoko",
   "name": "Kyoko",
   "plugins": [
-    { "key": "otakudesu", "name": "Otakudesu", "version": 1, "api": 1, "file": "sources/otakudesu.rhai", "sha256": "…" }
+    { "key": "example", "name": "Example", "version": 1, "api": 1, "file": "sources/example.rhai", "sha256": "…" }
   ]
 }
 ```
@@ -49,7 +40,7 @@ Scripts are [Rhai](https://rhai.rs/book/), which reads like a mix of Rust and Ja
 | `heights(url)`          | `[1080, 720, …]`: the resolutions an episode offers                       |
 | `stream(url, quality)`  | `#{ url, referer }`: a playable http(s) URL. `quality` is `"best"` or e.g. `"720p"` |
 
-Throw a string to fail (`throw "Otakudesu: no mirror for this episode";`). Start messages with the site's name: the app shows them to users. `print(…)` and `debug(…)` go to the app's log.
+Throw a string to fail (`throw "Example: no mirror for this episode";`). Start messages with the site's name: the app shows them to users. `print(…)` and `debug(…)` go to the app's log.
 
 Rhai notes: functions can't see variables outside them, but they can read top-level constants as `global::NAME`. `trim()`, `sort()` and `replace()` change the string or array in place and return nothing. `#"…"#` is a raw string, which suits regexes.
 
@@ -101,8 +92,8 @@ cargo build -p aikatsu-core --bin aikatsu-plugin --manifest-path ../aikatsu/Carg
 alias aikatsu-plugin=../aikatsu/target/debug/aikatsu-plugin
 
 aikatsu-plugin test .                          # every test_* in tests/, offline
-aikatsu-plugin live sources/otakudesu.rhai frieren   # search → episodes → qualities → stream on the real site
-aikatsu-plugin call sources/otakudesu.rhai search "one piece"   # one function's result as JSON
+aikatsu-plugin live sources/example.rhai frieren   # search → episodes → qualities → stream on the real site
+aikatsu-plugin call sources/example.rhai search "one piece"   # one function's result as JSON
 aikatsu-plugin index .                         # refresh the checksums in index.json
 ```
 
@@ -115,3 +106,7 @@ To try a repo in the app before publishing it, add it in Settings with a `file:/
 1. Change the script, then `aikatsu-plugin test .` and `aikatsu-plugin live sources/<key>.rhai`.
 2. Bump its `version` and run `aikatsu-plugin index .`.
 3. Commit and push. Apps pick it up on their next start, or from Settings → Check for updates. GitHub can take a few minutes to serve the new files.
+
+## License
+
+[GPL-3.0](LICENSE), like Aikatsu.
