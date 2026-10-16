@@ -1,0 +1,33 @@
+name: Check
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "17 2 * * *" # nightly: tells us a site changed before users do
+  workflow_dispatch:
+
+jobs:
+  plugins:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: KidiXDev/aikatsu
+          path: aikatsu
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: aikatsu
+      - name: Build aikatsu-plugin
+        run: cargo build -p aikatsu-core --bin aikatsu-plugin --manifest-path aikatsu/Cargo.toml
+      - name: Checksums are current
+        run: |
+          aikatsu/target/debug/aikatsu-plugin index .
+          git diff --exit-code index.json || { echo "::error::run 'aikatsu-plugin index .' and commit index.json"; exit 1; }
+      - name: Tests
+        run: aikatsu/target/debug/aikatsu-plugin test .
+      - name: Live sites
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: aikatsu/target/debug/aikatsu-plugin live .

@@ -1,0 +1,54 @@
+{
+  "id": "kyoko",
+  "name": "Kyoko",
+  "plugins": [
+    {
+      "key": "otakudesu",
+      "name": "Otakudesu",
+      "version": 1,
+      "api": 1,
+      "file": "sources/otakudesu.rhai",
+      "sha256": "286a6cc811ed84458fa4623e1ebb4884009e8a4d1a5d101ba6bc1396b7cbe737"
+    },
+    {
+      "key": "samehadaku",
+      "name": "Samehadaku",
+      "version": 1,
+      "api": 1,
+      "file": "sources/samehadaku.rhai",
+      "sha256": "2e3b9345ecfc0722e8e63f563d793aec8892ee91a4c26102a04a873f42d1da12"
+    },
+    {
+      "key": "nimegami",
+      "name": "Nimegami",
+      "version": 1,
+      "api": 1,
+      "file": "sources/nimegami.rhai",
+      "sha256": "8572164389e898465cb72c31158053d1e9ec401b1e528c46a6347a4ce72d971e"
+    },
+    {
+      "key": "ylnime",
+      "name": "YLnime",
+      "version": 1,
+      "api": 1,
+      "file": "sources/ylnime.rhai",
+      "sha256": "760f9559ccb9cd0b07f970b8987b86236ee2c8641a31e4b4887a1eda026be3a7"
+    },
+    {
+      "key": "moenime",
+      "name": "Moenime",
+      "version": 1,
+      "api": 1,
+      "file": "sources/moenime.rhai",
+      "sha256": "e573e35064a04dcca2038e189ec1b95fbe8a8b2855c1243f97a6a2643f76215e"
+    },
+    {
+      "key": "astronime",
+      "name": "Astronime",
+      "version": 1,
+      "api": 1,
+      "file": "sources/astronime.rhai",
+      "sha256": "5f166f14eac6d44d302589a83a4af0e9e9537d9c1d60c08e868fe71e5a20b3e0"
+    }
+  ]
+}
