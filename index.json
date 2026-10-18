@@ -43,6 +43,14 @@
       "sha256": "e573e35064a04dcca2038e189ec1b95fbe8a8b2855c1243f97a6a2643f76215e"
     },
     {
+      "key": "sokuja",
+      "name": "Sokuja",
+      "version": 1,
+      "api": 1,
+      "file": "sources/sokuja.rhai",
+      "sha256": "0263f0a77961704fe5cd79e3031dbf3b6f0f38370b3d49a72bc23d7a5316fbc6"
+    },
+    {
       "key": "astronime",
       "name": "Astronime",
       "version": 1,
