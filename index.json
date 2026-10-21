@@ -57,6 +57,14 @@
       "api": 1,
       "file": "sources/astronime.rhai",
       "sha256": "5f166f14eac6d44d302589a83a4af0e9e9537d9c1d60c08e868fe71e5a20b3e0"
+    },
+    {
+      "key": "kuramanime",
+      "name": "Kuramanime",
+      "version": 1,
+      "api": 1,
+      "file": "sources/kuramanime.rhai",
+      "sha256": "2a2ff57e9afebbdc4913dbae3023793563cad944bc85eb25ea04525eda7ae1a6"
     }
   ]
 }
