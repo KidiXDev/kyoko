@@ -65,6 +65,14 @@
       "api": 1,
       "file": "sources/kuramanime.rhai",
       "sha256": "2a2ff57e9afebbdc4913dbae3023793563cad944bc85eb25ea04525eda7ae1a6"
+    },
+    {
+      "key": "anoboy",
+      "name": "Anoboy",
+      "version": 1,
+      "api": 1,
+      "file": "sources/anoboy.rhai",
+      "sha256": "9c21a37d0f429ae3ea7e2a5c052a32c0fee711969ffa1071ac9b34cfc7430199"
     }
   ]
 }
