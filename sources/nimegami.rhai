@@ -84,8 +84,9 @@ fn parse_entries(body, episode) {
         let kind = e?.episodeType ?? "episode";
         let id = if kind == "episode" { `${e.episode}` } else { `${kind}_${e.episode}` };
         if id != episode { continue; }
-        let u = e?.playUrl;
-        if type_of(u) != "string" || !is_web(u) { continue; }
+        if type_of(e?.playUrl) != "string" { continue; }
+        let u = url_join(referer(), e.playUrl);
+        if !is_web(u) { continue; }
         let p = url_parse(u);
         if ["vsys-srv.berkasdrive.com", "vsys-meledak.dlgan.my.id"].contains(p.host) {
             u.replace("/hal/download/", "/hal/streaming/");
