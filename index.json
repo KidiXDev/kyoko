@@ -73,6 +73,14 @@
       "api": 1,
       "file": "sources/anoboy.rhai",
       "sha256": "9c21a37d0f429ae3ea7e2a5c052a32c0fee711969ffa1071ac9b34cfc7430199"
+    },
+    {
+      "key": "animeindo",
+      "name": "AnimeIndo",
+      "version": 1,
+      "api": 1,
+      "file": "sources/animeindo.rhai",
+      "sha256": "ea3a6dd77732e3d2ebb6efb2252bcf359788c772a65735b246b0f6071da71fbd"
     }
   ]
 }
