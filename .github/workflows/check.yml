@@ -4,7 +4,7 @@ on:
   push:
   pull_request:
   schedule:
-    - cron: "17 2 * * *" # nightly: tells us a site changed before users do
+    - cron: "17 2 * * *" # nightly: reports live-site availability
   workflow_dispatch:
 
 jobs:
@@ -31,5 +31,11 @@ jobs:
       - name: Tests
         run: aikatsu/target/debug/aikatsu-plugin test .
       - name: Live sites
+        id: live
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        # Sites can challenge CI runner IPs or time out while working for users.
+        continue-on-error: true
         run: aikatsu/target/debug/aikatsu-plugin live .
+      - name: Report live-site failures
+        if: steps.live.outcome == 'failure'
+        run: echo "::warning::Live-site checks failed. Review the Live sites log; runner IP blocks and timeouts do not necessarily mean a plugin is broken."
