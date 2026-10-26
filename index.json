@@ -21,10 +21,10 @@
     {
       "key": "nimegami",
       "name": "Nimegami",
-      "version": 2,
+      "version": 3,
       "api": 1,
       "file": "sources/nimegami.rhai",
-      "sha256": "c45021df031c7b98ce851b3b80d2dd4d47f1e50c1e08c0911a1d3de94f5129d0"
+      "sha256": "cffbe9f37ea841262f0458d7efa5a782c9bb5991876c7b198a2cca555141fe9b"
     },
     {
       "key": "ylnime",
