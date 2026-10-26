@@ -81,6 +81,14 @@
       "api": 1,
       "file": "sources/animeindo.rhai",
       "sha256": "ea3a6dd77732e3d2ebb6efb2252bcf359788c772a65735b246b0f6071da71fbd"
+    },
+    {
+      "key": "animasu",
+      "name": "Animasu",
+      "version": 1,
+      "api": 1,
+      "file": "sources/animasu.rhai",
+      "sha256": "aadd29f01cc6d2edd2654f97151c534c053d729fbed7bbabe9a52caae53c1d05"
     }
   ]
 }
